@@ -43,7 +43,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
         titleText.setText(currentBook.getTitle());
 
         TextView subtitleText = (TextView) listItemView.findViewById(R.id.subtitle);
-        subtitleText.setText(currentBook.getSubTitle());
+        subtitleText.setText(currentBook.getAuthor());
 
         return listItemView;
     }
@@ -72,7 +72,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
                     bookDetail.getTitle().toLowerCase(Locale.getDefault()).contains(charText)) {
                     parkingList.add(bookDetail);
                 } else if (charText.length() != 0 &&
-                           bookDetail.getSubTitle().toLowerCase(Locale.getDefault()).contains(charText)) {
+                           bookDetail.getAuthor().toLowerCase(Locale.getDefault()).contains(charText)) {
                     parkingList.add(bookDetail);
                 }
             }

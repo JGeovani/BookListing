@@ -6,12 +6,12 @@ package com.udacity.android.booklisting;
 public class Book {
 
     private String mTitle;
-    private String mSubTitle;
+    private String mAuthor;
 
 
-    public Book(String title, String subTitle) {
+    public Book(String title, String author) {
         mTitle = title;
-        mSubTitle = subTitle;
+        mAuthor = author;
     }
 
 
@@ -19,19 +19,10 @@ public class Book {
         return mTitle;
     }
 
-    public void setTitle(String title) {
-        mTitle = title;
+
+    public String getAuthor() {
+        return mAuthor;
     }
-
-
-    public String getSubTitle() {
-        return mSubTitle;
-    }
-
-    public void setSubTitle(String subTitle) {
-        mSubTitle = subTitle;
-    }
-
 
 
 }
