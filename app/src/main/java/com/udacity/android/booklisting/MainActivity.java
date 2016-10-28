@@ -63,12 +63,17 @@ public class MainActivity extends AppCompatActivity
             LoaderManager loaderManager = getLoaderManager();
             loaderManager.initLoader(BOOK_LOADER_ID, null, this);
         } else {
-            View loadingIndicator = findViewById(R.id.loading_indicator);
-            loadingIndicator.setVisibility(View.VISIBLE);
+            showLoading();
             mEmptyText.setText(R.string.no_internet_connection);
         }
 
         getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
+    }
+
+
+    private void showLoading() {
+        View loadingIndicator = findViewById(R.id.loading_indicator);
+        loadingIndicator.setVisibility(View.VISIBLE);
     }
 
 
@@ -94,7 +99,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 Log.i(TAG, "onFocusChange");
-
             }
         });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -147,7 +151,9 @@ public class MainActivity extends AppCompatActivity
     public Loader<List<Book>> onCreateLoader(int id, Bundle args) {
         Uri baseUri = Uri.parse(BASE_BOOKS_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
-
+        //
+        showLoading();
+        //
         if (mQuery == null) {
             mQuery = "android";
         }
