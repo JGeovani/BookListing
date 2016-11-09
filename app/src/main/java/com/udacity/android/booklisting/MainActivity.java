@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         bookArrayList = new ArrayList<>();
-//        setupInitData(bookArrayList);
 
         if (savedInstanceState != null) {
             mQuery = savedInstanceState.getString("query");
@@ -77,18 +76,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    @Deprecated
-    private void setupInitData(ArrayList list) {
-        list.add(new Book("Sonho Lúcido", "Dylan Tuccillo, Jared Zeizel, Thomas Peisel"));
-        list.add(new Book("De Zero a Um", "Peter Thiel"));
-        list.add(new Book("A Arte de Fazer Acontecer", "David Allen"));
-        list.add(new Book("A Única Coisa", "Jay Papasan, Gary Keller"));
-        list.add(new Book("A Estratégia do Oceano Azul", "W. Chan Kim e Renée Mauborgne"));
-        list.add(new Book("A Ciência de Ficar Rico", "Wallace D. Wattles"));
-        list.add(new Book("Os Segredos de Uma Mente Milionária", "T. Harv Eker"));
-    }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_search, menu);
@@ -104,9 +91,15 @@ public class MainActivity extends AppCompatActivity
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                mQuery = query;
-                Log.i(TAG, "onQueryTextSubmit | mQuery: " + mQuery);
-                getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
+                ConnectivityManager conn = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo networkInfo = conn.getActiveNetworkInfo();
+                if (networkInfo != null && networkInfo.isConnected()) {
+                    mQuery = query;
+                    Log.i(TAG, "onQueryTextSubmit | mQuery: " + mQuery);
+                    getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
+                } else {
+                    mEmptyText.setText(R.string.no_internet_connection);
+                }
                 return false;
             }
 
@@ -114,7 +107,8 @@ public class MainActivity extends AppCompatActivity
             public boolean onQueryTextChange(String searchQuery) {
                 Log.i(TAG, "onQueryTextChange | searchQuery: " + searchQuery);
                 assert searchQuery != null;
-                mAdapter.filter(searchQuery.trim());
+                assert bookArrayList != null;
+                mAdapter.filter(searchQuery.trim(), bookArrayList);
                 mListView.invalidate();
                 return true;
             }
@@ -172,7 +166,6 @@ public class MainActivity extends AppCompatActivity
         View loadingIndicator = findViewById(R.id.loading_indicator);
         loadingIndicator.setVisibility(View.GONE);
 
-//        mAdapter.clear();
         if (dataBooks != null && !dataBooks.isEmpty()) {
             mAdapter.addAll(dataBooks);
             bookArrayList.addAll(dataBooks);
