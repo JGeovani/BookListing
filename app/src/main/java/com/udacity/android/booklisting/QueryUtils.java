@@ -39,9 +39,7 @@ public class QueryUtils {
             Log.e(TAG, "Problem making the HTTP request.", e);
         }
 
-        List<Book> books = extractFeatureFromJson(jsonResponse);
-
-        return books;
+        return extractFeatureFromJson(jsonResponse);
     }
 
 
@@ -53,13 +51,20 @@ public class QueryUtils {
 
         try {
             JSONObject root = new JSONObject(bookJSON);
-            JSONArray items = root.getJSONArray("items");
+            int totalItems = root.optInt("totalItems");
+            if (totalItems == 0) {
+                Log.i(TAG, "No Result Found :(");
+                return null;
+            }
+            //
+            JSONArray items = root.optJSONArray("items");
             for (int i = 0; i < items.length(); i++) {
-                JSONObject currentBook = items.getJSONObject(i);
-                JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
+                JSONObject currentBook = items.optJSONObject(i);
+                JSONObject volumeInfo = currentBook.optJSONObject("volumeInfo");
 
                 String title   = volumeInfo.optString("title");
                 String authors = volumeInfo.optString("authors");
+                Log.i(TAG, "title: " + title + " by " + "authors: " + authors);
 
                 Book book = new Book(title, authors);
                 books.add(book);
@@ -67,7 +72,6 @@ public class QueryUtils {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         return books;
     }
 
