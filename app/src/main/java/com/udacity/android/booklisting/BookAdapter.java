@@ -1,6 +1,7 @@
 package com.udacity.android.booklisting;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,22 +17,23 @@ import java.util.Locale;
  */
 public class BookAdapter extends ArrayAdapter<Book> {
 
-    public List<Book> parkingList;
-    ArrayList<Book> arraylist;
-    Context mContext;
+    private List<Book> mBooks;
+    private ArrayList<Book> auxBooks;
+    private Context mContext;
 
 
     public BookAdapter(Context context, List<Book> books) {
         super(context, 0, books);
-        mContext    = context;
-        parkingList = books;
-        arraylist   = new ArrayList<>();
-        arraylist.addAll(parkingList);
+        mContext = context;
+        mBooks   = books;
+        auxBooks = new ArrayList<>();
+        auxBooks.addAll(mBooks);
     }
 
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View listItemView = convertView;
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.item_list, parent, false);
@@ -40,6 +42,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
         Book currentBook = getItem(position);
 
         TextView titleText = (TextView) listItemView.findViewById(R.id.title);
+        assert currentBook != null;
         titleText.setText(currentBook.getTitle());
 
         TextView subtitleText = (TextView) listItemView.findViewById(R.id.subtitle);
@@ -51,7 +54,11 @@ public class BookAdapter extends ArrayAdapter<Book> {
 
     @Override
     public int getCount() {
-        return parkingList.size();
+        if (mBooks != null) {
+            return mBooks.size();
+        } else {
+            return 0;
+        }
     }
 
 
@@ -61,19 +68,19 @@ public class BookAdapter extends ArrayAdapter<Book> {
     }
 
 
-    public void filter(String charText) {
+    public void filter(String charText, List<Book> books) {
         charText = charText.toLowerCase(Locale.getDefault());
-        parkingList.clear();
+        books.clear();
         if (charText.length() == 0) {
-            parkingList.addAll(arraylist);
+            books.addAll(auxBooks);
         } else {
-            for (Book bookDetail : arraylist) {
+            for (Book book : auxBooks) {
                 if (charText.length() != 0 &&
-                    bookDetail.getTitle().toLowerCase(Locale.getDefault()).contains(charText)) {
-                    parkingList.add(bookDetail);
+                    book.getTitle().toLowerCase(Locale.getDefault()).contains(charText)) {
+                    books.add(book);
                 } else if (charText.length() != 0 &&
-                           bookDetail.getAuthor().toLowerCase(Locale.getDefault()).contains(charText)) {
-                    parkingList.add(bookDetail);
+                           book.getAuthor().toLowerCase(Locale.getDefault()).contains(charText)) {
+                    books.add(book);
                 }
             }
         }
