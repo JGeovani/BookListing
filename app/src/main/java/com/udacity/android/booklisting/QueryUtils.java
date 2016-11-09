@@ -58,8 +58,8 @@ public class QueryUtils {
                 JSONObject currentBook = items.getJSONObject(i);
                 JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
 
-                String title    = volumeInfo.getString("title");
-                String authors  = volumeInfo.getString("authors");
+                String title   = volumeInfo.optString("title");
+                String authors = volumeInfo.optString("authors");
 
                 Book book = new Book(title, authors);
                 books.add(book);
