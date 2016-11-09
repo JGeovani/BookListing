@@ -24,6 +24,8 @@
 
     <!-- Loading indicator is only shown before the first load -->
     <ProgressBar
+        android:visibility="gone"
+        tools:visibility="visible"
         android:id="@+id/loading_indicator"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"

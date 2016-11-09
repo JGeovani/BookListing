@@ -35,12 +35,15 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Book> bookArrayList;
     private String mQuery;
     private TextView mEmptyText;
+    private View mIndicator;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mIndicator = findViewById(R.id.loading_indicator);
 
         bookArrayList = new ArrayList<>();
 
@@ -62,17 +65,11 @@ public class MainActivity extends AppCompatActivity
             LoaderManager loaderManager = getLoaderManager();
             loaderManager.initLoader(BOOK_LOADER_ID, null, this);
         } else {
-            showLoading();
+            mIndicator.setVisibility(View.VISIBLE);
             mEmptyText.setText(R.string.no_internet_connection);
         }
 
         getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
-    }
-
-
-    private void showLoading() {
-        View loadingIndicator = findViewById(R.id.loading_indicator);
-        loadingIndicator.setVisibility(View.VISIBLE);
     }
 
 
@@ -146,7 +143,7 @@ public class MainActivity extends AppCompatActivity
         Uri baseUri = Uri.parse(BASE_BOOKS_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
         //
-        showLoading();
+        mIndicator.setVisibility(View.VISIBLE);
         //
         if (mQuery == null) {
             mQuery = "android";
@@ -163,9 +160,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<List<Book>> loader, List<Book> dataBooks) {
         Log.i(TAG, "onLoadFinished");
-        View loadingIndicator = findViewById(R.id.loading_indicator);
-        loadingIndicator.setVisibility(View.GONE);
-
+        //
+        mIndicator.setVisibility(View.GONE);
+        //
         if (dataBooks != null && !dataBooks.isEmpty()) {
             mAdapter.addAll(dataBooks);
             bookArrayList.addAll(dataBooks);
@@ -174,6 +171,7 @@ public class MainActivity extends AppCompatActivity
             mEmptyText.setText(getResources().getString(R.string.no_book));
         }
     }
+
 
     @Override
     public void onLoaderReset(Loader<List<Book>> loader) {
@@ -189,11 +187,12 @@ public class MainActivity extends AppCompatActivity
         outState.putString("query", mQuery);
     }
 
+
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        mQuery = savedInstanceState.getString("query");
         Log.i(TAG, "onRestoreInstanceState: " + mQuery);
+        mQuery = savedInstanceState.getString("query");
     }
 
 
