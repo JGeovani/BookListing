@@ -1,11 +1,6 @@
 package com.udacity.android.booklisting;
 
-import android.text.TextUtils;
 import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,40 +33,7 @@ public class QueryUtils {
             Log.e(TAG, "Problem making the HTTP request.", e);
         }
 
-        return extractFeatureFromJson(jsonResponse);
-    }
-
-
-    private static List<Book> extractFeatureFromJson(String bookJSON) {
-        if (TextUtils.isEmpty(bookJSON)) {
-            return null;
-        }
-        List<Book> books = new ArrayList<>();
-
-        try {
-            JSONObject root = new JSONObject(bookJSON);
-            int totalItems = root.optInt("totalItems");
-            if (totalItems == 0) {
-                Log.i(TAG, "No Result Found :(");
-                return null;
-            }
-            //
-            JSONArray items = root.optJSONArray("items");
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject currentBook = items.optJSONObject(i);
-                JSONObject volumeInfo = currentBook.optJSONObject("volumeInfo");
-
-                String title   = volumeInfo.optString("title");
-                String authors = volumeInfo.optString("authors");
-                Log.i(TAG, "title: " + title + " by " + "authors: " + authors);
-
-                Book book = new Book(title, authors);
-                books.add(book);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return books;
+        return GoogleBooksAPI.extractFeatureFromJson(jsonResponse);
     }
 
 
