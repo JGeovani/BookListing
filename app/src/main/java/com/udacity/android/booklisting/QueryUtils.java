@@ -1,5 +1,8 @@
 package com.udacity.android.booklisting;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -20,10 +23,6 @@ public class QueryUtils {
     private static final String TAG = QueryUtils.class.getSimpleName();
 
 
-    public QueryUtils() {
-    }
-
-
     public static List<Book> fetchBookData(String requestUrl) {
         URL url = createUrl(requestUrl);
         String jsonResponse = null;
@@ -32,7 +31,6 @@ public class QueryUtils {
         } catch (IOException e) {
             Log.e(TAG, "Problem making the HTTP request.", e);
         }
-
         return GoogleBooksAPI.extractFeatureFromJson(jsonResponse);
     }
 
@@ -98,6 +96,12 @@ public class QueryUtils {
         return url;
     }
 
+
+    public static boolean isInternetAccess(Context context) {
+        ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = conn.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
+    }
 
 
 }

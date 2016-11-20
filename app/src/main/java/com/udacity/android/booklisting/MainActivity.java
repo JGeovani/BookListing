@@ -1,15 +1,14 @@
 package com.udacity.android.booklisting;
 
 import android.app.LoaderManager;
-import android.content.Context;
 import android.content.Loader;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,34 +41,27 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //
         mIndicator = findViewById(R.id.loading_indicator);
-
-        bookArrayList = new ArrayList<>();
-
+        //
         if (savedInstanceState != null) {
             mQuery = savedInstanceState.getString("query");
         }
-
+        //
+        bookArrayList = new ArrayList<>();
         mAdapter = new BookAdapter(this, bookArrayList);
-
+        //
         mListView = (ListView) findViewById(R.id.listViewBooks);
         mListView.setAdapter(mAdapter);
-
+        //
         mEmptyText = (TextView) findViewById(R.id.empty_view);
         mListView.setEmptyView(mEmptyText);
         //
-        ConnectivityManager conn = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = conn.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            LoaderManager loaderManager = getLoaderManager();
-            loaderManager.initLoader(BOOK_LOADER_ID, null, this);
+        if (QueryUtils.isInternetAccess(MainActivity.this)) {
+            getLoaderManager().initLoader(BOOK_LOADER_ID, null, this);
         } else {
-            mIndicator.setVisibility(View.VISIBLE);
             mEmptyText.setText(R.string.no_internet_connection);
         }
-
-        getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
     }
 
 
@@ -78,7 +70,7 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.menu_search, menu);
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -88,15 +80,8 @@ public class MainActivity extends AppCompatActivity
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                ConnectivityManager conn = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo networkInfo = conn.getActiveNetworkInfo();
-                if (networkInfo != null && networkInfo.isConnected()) {
-                    mQuery = query;
-                    Log.i(TAG, "onQueryTextSubmit | mQuery: " + mQuery);
-                    getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
-                } else {
-                    mEmptyText.setText(R.string.no_internet_connection);
-                }
+                mQuery = query;
+                Log.i(TAG, "onQueryTextSubmit | mQuery: " + mQuery);
                 return false;
             }
 
@@ -105,8 +90,25 @@ public class MainActivity extends AppCompatActivity
                 Log.i(TAG, "onQueryTextChange | searchQuery: " + searchQuery);
                 assert searchQuery != null;
                 assert bookArrayList != null;
-                mAdapter.filter(searchQuery.trim(), bookArrayList);
-                mListView.invalidate();
+                if (QueryUtils.isInternetAccess(getBaseContext())) {
+                    mAdapter.filter(searchQuery.trim(), bookArrayList);
+                    mListView.invalidate();
+                    //
+                    String newFilter = !TextUtils.isEmpty(searchQuery) ? searchQuery : null;
+                    Log.i(TAG, "newFilter: " + newFilter);
+                    if (mQuery == null && newFilter == null) {
+                        return true;
+                    }
+                    if (mQuery != null && mQuery.equals(newFilter)) {
+                        return true;
+                    }
+                    mQuery = newFilter;
+                    getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
+                } else {
+                    Snackbar.make(searchView, R.string.snackbar_no_internet, Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    mEmptyText.setText(R.string.no_internet_connection);
+                }
                 return true;
             }
         });
@@ -114,14 +116,12 @@ public class MainActivity extends AppCompatActivity
         MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                // Do something when collapsed
-                return true;  // Return true to collapse action view
+                return true;
             }
 
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                // Do something when expanded
-                return true;  // Return true to expand action view
+                return true;
             }
         });
         return true;
@@ -131,6 +131,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Log.i(TAG, "home");
+            mListView.setEmptyView(mEmptyText);
+            mEmptyText.setText(R.string.empty_welcome);
+            return true;
+        }
+        else
         if (id == R.id.action_search) {
             return true;
         }
@@ -150,12 +157,12 @@ public class MainActivity extends AppCompatActivity
         }
         Log.i(TAG, "onCreateLoader | mQuery: " + mQuery);
         uriBuilder.appendQueryParameter("q", mQuery);
-        //
         uriBuilder.appendQueryParameter("maxResults", "40");
         //
         Log.i(TAG, "onCreateLoader | uriBuilder.toString(): " + uriBuilder.toString());
         return  new BookLoader(this, uriBuilder.toString());
     }
+
 
     @Override
     public void onLoadFinished(Loader<List<Book>> loader, List<Book> dataBooks) {

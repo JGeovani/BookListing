@@ -6,4 +6,8 @@
     <string name="search_hint">Magic words</string>
 
     <string name="no_book">No book found :(</string>
+    <string name="empty_welcome">Seja bem-vindo ao BookListing</string>
+    <string name="snackbar_no_internet">Por favor, ative a Internet para usufluir o máximo deste
+        app
+    </string>
 </resources>
